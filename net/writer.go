@@ -3,6 +3,7 @@ package net
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -20,8 +21,8 @@ func (rw *ResponseWriter) Header() http.Header {
 }
 
 func (rw *ResponseWriter) Write(b []byte) (int, error) {
-	// Limit the size of the logged body to 128KB
-	if limit := 128 * 1024; len(b) > limit {
+	// Limit the size of the logged body to 256 bytes
+	if limit := 256; len(b) > limit {
 		io.Copy(rw.buffer, bytes.NewReader(b[:limit]))
 		io.Copy(rw.buffer, bytes.NewReader([]byte("...")))
 	} else {
@@ -58,15 +59,24 @@ func (rw *ResponseWriter) Status() string {
 }
 
 // Body returns the response a byte slice copy of the response body.
-// Maximum size is 128KB plus ellipsis if truncated. This is useful for logging purposes.
+// Maximum size is 256 bytes plus ellipsis if truncated. This is useful for logging purposes.
 func (rw *ResponseWriter) Body() []byte {
 	return rw.buffer.Bytes()
 }
 
 // BodySize returns the size of the response body written.
 // This is size of the actual body, not the logged body.
-func (rw *ResponseWriter) BodySize() int {
-	return rw.bodySize
+func (rw *ResponseWriter) BodySize() string {
+	if rw.bodySize < 1<<10 {
+		return fmt.Sprintf("%d bytes", rw.bodySize) // in bytes
+	}
+	if rw.bodySize < 1<<20 {
+		return fmt.Sprintf("%.3f KB", float64(rw.bodySize)/(1<<10)) // in KB
+	}
+	if rw.bodySize < 1<<30 {
+		return fmt.Sprintf("%.3f MB", float64(rw.bodySize)/(1<<20)) // in MB
+	}
+	return fmt.Sprintf("%.3f GB", float64(rw.bodySize)/(1<<30)) // in GB
 }
 
 func NewHttpWriter(w http.ResponseWriter) *ResponseWriter {

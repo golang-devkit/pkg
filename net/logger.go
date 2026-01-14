@@ -51,7 +51,7 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 			// Log the response body after the handler has processed the request
 			reqLogger.Debug("Interceptor",
 				zap.ByteString(logger.KeyNetResponsePayload, wc.Body()),
-				zap.Int(logger.KeyNetResponseSize, wc.BodySize()))
+				zap.String(logger.KeyNetResponseSize, wc.BodySize()))
 
 			// Log the API request details
 			printLogApi(wc, r, time.Now())
@@ -64,7 +64,7 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 			return
 		}
 		// Truncate the payload if it's too large
-		if limit := 128 * 1024; len(payload) > limit {
+		if limit := 256; len(payload) > limit {
 			payload = payload[:limit]
 			payload = append(payload, []byte("...")...)
 		}
