@@ -64,8 +64,8 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 			return
 		}
 		// Truncate the payload if it's too large
-		if limit := 256; len(payload) > limit {
-			payload = payload[:limit]
+		if len(payload) > maxLoggedBodySize {
+			payload = payload[:maxLoggedBodySize]
 			payload = append(payload, []byte("...")...)
 		}
 		// Log the request body

@@ -9,6 +9,10 @@ import (
 	"net/http"
 )
 
+const (
+	maxLoggedBodySize = 256 // Maximum size of the logged body in bytes
+)
+
 type ResponseWriter struct {
 	http.ResponseWriter
 	status   int
@@ -22,9 +26,8 @@ func (rw *ResponseWriter) Header() http.Header {
 
 func (rw *ResponseWriter) Write(b []byte) (int, error) {
 	// Limit the size of the logged body to 256 bytes
-	if limit := 256; len(b) > limit {
-		io.Copy(rw.buffer, bytes.NewReader(b[:limit]))
-		io.Copy(rw.buffer, bytes.NewReader([]byte("...")))
+	if len(b) > maxLoggedBodySize {
+		io.Copy(rw.buffer, bytes.NewReader(b[:maxLoggedBodySize]))
 	} else {
 		io.Copy(rw.buffer, bytes.NewReader(b))
 	}
@@ -61,7 +64,7 @@ func (rw *ResponseWriter) Status() string {
 // Body returns the response a byte slice copy of the response body.
 // Maximum size is 256 bytes plus ellipsis if truncated. This is useful for logging purposes.
 func (rw *ResponseWriter) Body() []byte {
-	return rw.buffer.Bytes()
+	return fmt.Appendf(rw.buffer.Next(maxLoggedBodySize), "...")
 }
 
 // BodySize returns the size of the response body written.
