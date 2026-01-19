@@ -56,8 +56,7 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 		)
 
 		// Get the logger from the context
-		reqLogger := getLoggerFromContext(r.Context())
-		reqLogger = reqLogger.With(
+		reqLogger := getLoggerFromContext(r.Context()).With(
 			zap.String(logger.KeyNetRemoteAddr, r.RemoteAddr),
 			zap.String(logger.KeyNetHttpMethod, r.Method),
 			zap.String(logger.KeyNetHttpPath, r.URL.String()),
@@ -68,13 +67,13 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 		)
 
 		// replace request with the logger back to the context
-		r = r.WithContext(logger.SetLoggerToContext(r.Context(), reqLogger))
+		r = r.WithContext(setLoggerToContext(r.Context(), reqLogger))
 
 		// make a new response writer with the original writer
 		wc := NewHttpWriter(w)
 		defer func() {
 			// Log the response body after the handler has processed the request
-			reqLogger.Debug("Interceptor",
+			reqLogger.Debug("API Logger",
 				zap.ByteString(logger.KeyNetResponsePayload, wc.Body()),
 				zap.String(logger.KeyNetResponseSize, wc.BodySize()))
 
@@ -94,7 +93,7 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 			payload = append(payload, []byte("...")...)
 		}
 		// Log the request body
-		reqLogger.Debug("Interceptor", zap.ByteString(logger.KeyNetRequestPayload, payload))
+		reqLogger.Debug("API Logger", zap.ByteString(logger.KeyNetRequestPayload, payload))
 
 		// Call the next handler
 		h.ServeHTTP(wc, r)
