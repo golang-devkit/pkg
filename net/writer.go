@@ -7,10 +7,12 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 )
 
 const (
-	maxLoggedBodySize = 256 // Maximum size of the logged body in bytes
+	maxLoggedBodySize = 256  // Maximum size of the logged body in bytes
+	maxLoggedJsonSize = 1024 // Maximum size of the logged JSON in bytes
 )
 
 type ResponseWriter struct {
@@ -64,6 +66,26 @@ func (rw *ResponseWriter) Status() string {
 // Body returns the response a byte slice copy of the response body.
 // Maximum size is 256 bytes plus ellipsis if truncated. This is useful for logging purposes.
 func (rw *ResponseWriter) Body() []byte {
+	// Check the Content-Type for special handling
+	ctype := rw.Header().Get("Content-Type")
+	// Handle JSON content type separately
+	if strings.HasPrefix(ctype, "application/json") {
+		return fmt.Appendf(rw.buffer.Next(maxLoggedJsonSize), "...")
+	}
+	if strings.HasPrefix(ctype, "image/jpeg") || strings.HasPrefix(ctype, "image/png") ||
+		strings.HasPrefix(ctype, "image/gif") || strings.HasPrefix(ctype, "image/svg") {
+		return fmt.Appendf(nil, "<<%s data>>", ctype)
+	}
+	if strings.HasPrefix(ctype, "application/pdf") || strings.HasPrefix(ctype, "application/vnd.") {
+		return fmt.Appendf(nil, "<<%s data>>", ctype)
+	}
+	if strings.HasPrefix(ctype, "text/csv") {
+		return fmt.Appendf(nil, "<<%s data>>", ctype)
+	}
+	if strings.HasPrefix(ctype, "application/octet-stream") || strings.HasPrefix(ctype, "application/pdf") ||
+		strings.HasPrefix(ctype, "application/zip") {
+		return fmt.Appendf(nil, "<<%s data>>", ctype)
+	}
 	return fmt.Appendf(rw.buffer.Next(maxLoggedBodySize), "...")
 }
 
