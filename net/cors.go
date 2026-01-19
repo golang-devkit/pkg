@@ -17,6 +17,10 @@ var (
 	enableCORS = true
 )
 
+func setCORSEnabled(enabled bool) {
+	enableCORS = enabled
+}
+
 func writeHeadersCORS(w http.ResponseWriter) {
 	// Set CORS headers
 	w.Header().Set(corsAllowOriginHeader, "*")
@@ -24,68 +28,6 @@ func writeHeadersCORS(w http.ResponseWriter) {
 	w.Header().Set(corsAllowHeadersHeader, "*")
 	w.Header().Set(corsMaxAgeHeader, "3600")
 	w.Header().Set(corsAllowCredentialsHeader, "true")
-}
-
-func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerFunc) http.Handler {
-
-	// Apply the middleware functions
-	middlewareHandler := func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Set the request-Id
-			if requestId := r.Header.Get(xApiRequestId); requestId == "" {
-				r.Header.Set(xApiRequestId, uuid.NewString())
-			}
-			for _, Func := range middlewareFunc {
-				Func(w, r)
-			}
-			h.ServeHTTP(w, r)
-		})
-	}
-
-	// Set CORS global flag
-	if enableCORS {
-		fmt.Printf("[DEBUG] CORS is enabled\n")
-		enableCORS = true
-	} else {
-		fmt.Printf("[DEBUG] CORS is disabled\n")
-		enableCORS = false
-	}
-
-	// Replace the default MethodNotAllowedHandler
-	ro.MethodNotAllowedHandler = customizeMethodNotAllowedHandler()
-
-	// Apply the middleware in order
-	ro.Use(corsHandler, middlewareHandler, loggerIntercepter, apiLoggerHandler)
-
-	// Walk through all the registered routes
-	if err := ro.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		pathTemplate, err := route.GetPathTemplate()
-		if err != nil {
-			return err
-		}
-		entry := getLogEntry()
-		methods, err := route.GetMethods()
-		if err != nil {
-			// fmt.Printf("[%-8s] HTTP/1.1 %s\n", "", pathTemplate)
-			entry.Debug("HTTP/1.1",
-				zap.String("http_method", "ANY"),
-				zap.String("path", pathTemplate),
-			)
-			return nil
-		}
-		for _, method := range methods {
-			// fmt.Printf("[%-8s] HTTP/1.1 %s\n", method, pathTemplate)
-			entry.Debug("HTTP/1.1",
-				zap.String("http_method", method),
-				zap.String("path", pathTemplate),
-			)
-		}
-		return nil
-	}); err != nil {
-		fmt.Println("Error walking routes: ", err)
-	}
-
-	return ro
 }
 
 // Define CORS options
@@ -149,4 +91,64 @@ func customizeMethodNotAllowedHandler() http.Handler {
 		fmt.Printf("[DEBUG] 403 Not Found: %s %s\n", r.Method, r.URL.Path)
 		http.Error(w, "403 method not allowed", http.StatusMethodNotAllowed)
 	})
+}
+
+func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerFunc) http.Handler {
+
+	// Apply the middleware functions
+	middlewareHandler := func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Set the request-Id
+			if requestId := r.Header.Get(xApiRequestId); requestId == "" {
+				r.Header.Set(xApiRequestId, uuid.NewString())
+			}
+			for _, Func := range middlewareFunc {
+				Func(w, r)
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+
+	// Set CORS global flag
+	if setCORSEnabled(enableCORS); enableCORS {
+		fmt.Printf("[DEBUG] CORS is enabled\n")
+	} else {
+		fmt.Printf("[DEBUG] CORS is disabled\n")
+	}
+
+	// Replace the default MethodNotAllowedHandler
+	ro.MethodNotAllowedHandler = customizeMethodNotAllowedHandler()
+
+	// Apply the middleware in order
+	ro.Use(corsHandler, middlewareHandler, loggerIntercepter, apiLoggerHandler)
+
+	// Walk through all the registered routes
+	if err := ro.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathTemplate, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		entry := getLogEntry()
+		methods, err := route.GetMethods()
+		if err != nil {
+			// fmt.Printf("[%-8s] HTTP/1.1 %s\n", "", pathTemplate)
+			entry.Debug("HTTP/1.1",
+				zap.String("http_method", "ANY"),
+				zap.String("path", pathTemplate),
+			)
+			return nil
+		}
+		for _, method := range methods {
+			// fmt.Printf("[%-8s] HTTP/1.1 %s\n", method, pathTemplate)
+			entry.Debug("HTTP/1.1",
+				zap.String("http_method", method),
+				zap.String("path", pathTemplate),
+			)
+		}
+		return nil
+	}); err != nil {
+		fmt.Println("Error walking routes: ", err)
+	}
+
+	return ro
 }
