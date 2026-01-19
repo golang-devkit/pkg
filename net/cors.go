@@ -19,20 +19,17 @@ func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerF
 			return h
 		}
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			// Set CORS headers
 			w.Header().Set(corsAllowOriginHeader, "*")
 			w.Header().Set(corsAllowMethodsHeader, "GET, POST, OPTIONS")
 			w.Header().Set(corsAllowHeadersHeader, "*")
 			w.Header().Set(corsMaxAgeHeader, "3600")
 			w.Header().Set(corsAllowCredentialsHeader, "true")
-
 			// Handle preflight OPTIONS request
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusNoContent)
 				return
 			}
-
 			// Call the next handler
 			h.ServeHTTP(w, r)
 		})
@@ -75,7 +72,7 @@ func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerF
 		})
 	}
 	//
-	ro.Use(corsHandler, middlewareHandler, loggerIntecepter)
+	ro.Use(corsHandler, middlewareHandler, loggerIntecepter, apiLoggerHandler)
 
 	// Walk through all the registered routes
 	err := ro.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
@@ -106,5 +103,5 @@ func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerF
 		fmt.Println("Error walking routes: ", err)
 	}
 
-	return apiLoggerHandler(ro)
+	return ro
 }
