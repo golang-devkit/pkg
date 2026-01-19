@@ -24,6 +24,13 @@ var (
 	}()
 )
 
+func valueDefault(val, def string) string {
+	if val == "" {
+		return def
+	}
+	return val
+}
+
 func getLogEntry() *zap.Logger {
 	return logger.NewEntry()
 }
@@ -41,9 +48,27 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 
 	// Define the API logger
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var (
+			origin    = valueDefault(r.Header.Get(headerOrigin), "N/A")
+			userAgent = valueDefault(r.Header.Get(headerUserAgent), "[N/A]")
+			requestId = valueDefault(r.Header.Get(xApiRequestId), "N/A")
+			clientId  = valueDefault(r.Header.Get(xApiClientId), "N/A")
+		)
 
 		// Get the logger from the context
 		reqLogger := getLoggerFromContext(r.Context())
+		reqLogger = reqLogger.With(
+			zap.String(logger.KeyNetRemoteAddr, r.RemoteAddr),
+			zap.String(logger.KeyNetHttpMethod, r.Method),
+			zap.String(logger.KeyNetHttpPath, r.URL.String()),
+			zap.String(logger.KeyNetClientID, clientId),
+			zap.String(logger.KeyNetRequestID, requestId),
+			zap.String(logger.KeyNetOrigin, origin),
+			zap.String(logger.KeyNetUserAgent, userAgent),
+		)
+
+		// replace request with the logger back to the context
+		r = r.WithContext(logger.SetLoggerToContext(r.Context(), reqLogger))
 
 		// make a new response writer with the original writer
 		wc := NewHttpWriter(w)
@@ -77,26 +102,6 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 }
 
 func printLogApi(wc *ResponseWriter, r *http.Request, t time.Time) {
-	var (
-		origin    = r.Header.Get(headerOrigin)
-		userAgent = r.Header.Get(headerUserAgent)
-		requestId = r.Header.Get(xApiRequestId)
-		clientId  = r.Header.Get(xApiClientId)
-		// 	more      string
-	)
-	// Add the request-Id to entry
-	if requestId == "" {
-		requestId = "N/A"
-	}
-	if origin == "" {
-		origin = "N/A"
-	}
-	if userAgent == "" {
-		userAgent = "[N/A]"
-	}
-	if clientId == "" {
-		clientId = "N/A"
-	}
 
 	// Collect response headers
 	cH := wc.Header().Clone()
@@ -115,10 +120,10 @@ func printLogApi(wc *ResponseWriter, r *http.Request, t time.Time) {
 		zap.String(logger.KeyNetStatus, wc.Status()),
 		zap.Int(logger.KeyNetStatusCode, wc.StatusCode()),
 		zap.String(logger.KeyNetDuration, time.Since(t).String()),
-		zap.String(logger.KeyNetClientID, clientId),
-		zap.String(logger.KeyNetRequestID, requestId),
-		zap.String(logger.KeyNetOrigin, origin),
-		zap.String(logger.KeyNetUserAgent, userAgent),
+		zap.String(logger.KeyNetClientID, r.Header.Get(xApiClientId)),
+		zap.String(logger.KeyNetRequestID, r.Header.Get(xApiRequestId)),
+		zap.String(logger.KeyNetOrigin, r.Header.Get(headerOrigin)),
+		zap.String(logger.KeyNetUserAgent, r.Header.Get(headerUserAgent)),
 		zap.String(logger.KeyNetDescription, cH.Get(xDescription)),
 		zap.String(logger.KeyNetDescriptionError, cH.Get(xDescriptionError)),
 	)
