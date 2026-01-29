@@ -3,10 +3,12 @@ module github.com/golang-devkit/pkg
 go 1.24.3
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	go.mongodb.org/mongo-driver/v2 v2.4.1
 	go.uber.org/zap v1.27.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
