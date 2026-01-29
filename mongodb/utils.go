@@ -28,9 +28,9 @@ func URIBeautifier(uri string) string {
 	} else {
 		// skip enter password for localhost
 		if strings.HasPrefix(u.Host, "localhost") || strings.HasPrefix(u.Host, "127.0.0.1") {
-			fmt.Println("Username/Password is missing in the URI, but host is localhost, skipping user input.")
+			fmt.Println("[DEBUG] Username/Password is missing in the URI, but host is localhost, skipping user input.")
 		} else {
-			fmt.Println("Username/Password is missing in the URI. Required user input.")
+			fmt.Println("[DEBUG] Username/Password is missing in the URI. Required user input.")
 			// no user info, ask for it
 			user := enterUserName()
 			password := enterPassword()
