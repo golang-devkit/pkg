@@ -26,14 +26,22 @@ func URIBeautifier(uri string) string {
 			u.User = url.UserPassword(u.User.Username(), enterPassword())
 		}
 	} else {
-		// no user info, ask for it
-		user := enterUserName()
-		password := enterPassword()
-		// if no password, set only user
-		if password != "" {
-			u.User = url.UserPassword(user, password)
+		// skip enter password for localhost
+		if strings.HasPrefix(u.Host, "localhost") || strings.HasPrefix(u.Host, "127.0.0.1") {
+			fmt.Println("Username/Password is missing in the URI, but host is localhost, skipping user input.")
 		} else {
-			u.User = url.User(user)
+			fmt.Println("Username/Password is missing in the URI. Required user input.")
+			// no user info, ask for it
+			user := enterUserName()
+			password := enterPassword()
+			// if no password, set only user
+			if user != "" {
+				u.User = url.User(user)
+			}
+			// set password if provided
+			if password != "" {
+				u.User = url.UserPassword(user, password)
+			}
 		}
 	}
 	// mask database name
