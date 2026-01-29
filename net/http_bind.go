@@ -61,9 +61,9 @@ func CloneBodyWithLimitReader(r *http.Request, limit int64) (httpStatusCode int,
 			println(err.Error())
 		}
 		// Restore the original body for further reading
-		if len(raw) > 0 {
-			r.Body = io.NopCloser(bytes.NewReader(raw))
-		}
+		dst := make([]byte, len(raw))
+		copy(dst, raw)
+		r.Body = io.NopCloser(bytes.NewBuffer(dst))
 	}(r.Body)
 	// Read body with limit reader
 	raw, err = io.ReadAll(io.LimitReader(r.Body, limit))
