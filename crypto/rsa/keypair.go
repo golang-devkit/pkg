@@ -41,6 +41,43 @@ func KeyPairFromSecret(secret string) (*KeyPair, error) {
 	}, nil
 }
 
+func KeyPairFromPEM(privatePEM []byte) (*KeyPair, error) {
+	block, _ := pem.Decode(privatePEM)
+	if block == nil || block.Type != "PRIVATE KEY" {
+		return nil, fmt.Errorf("failed to decode PEM block containing private key")
+	}
+
+	var (
+		keyParsed *rsa.PrivateKey
+		ok        bool
+		err       error
+	)
+
+	switch block.Type {
+	case "PRIVATE KEY":
+		// PKCS8 format
+		parsed, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %w", err)
+		}
+		if keyParsed, ok = parsed.(*rsa.PrivateKey); !ok {
+			return nil, fmt.Errorf("invalid private key")
+		}
+	case "RSA PRIVATE KEY":
+		// PKCS8 format
+		keyParsed, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("unsupported PEM block type: %s", block.Type)
+	}
+
+	return &KeyPair{
+		PrivateKey: keyParsed,
+	}, nil
+}
+
 type KeyPair struct {
 	PrivateKey *rsa.PrivateKey
 }
