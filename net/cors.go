@@ -98,6 +98,14 @@ func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerF
 	// Apply the middleware functions
 	middlewareHandler := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if rec := recover(); rec != nil {
+					getLogEntry().Error("Panic recovered in middleware",
+						zap.Any("recover", rec),
+					)
+					http.Error(w, "500 internal server error", http.StatusInternalServerError)
+				}
+			}()
 			// Set the request-Id
 			if requestId := r.Header.Get(xApiRequestId); requestId == "" {
 				r.Header.Set(xApiRequestId, uuid.NewString())
