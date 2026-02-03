@@ -137,7 +137,7 @@ func (c *Connection) Read(ctx context.Context, readFn func(*mongo.Database) erro
 func (c *Connection) ReadPrimary(ctx context.Context, readFn func(*mongo.Database) error) (err error) {
 	defer func(t time.Time) {
 		c.incRead(MethodReadPrimary, err)
-		log.Printf("MongoDB metric: %s", c.print(t, MethodReadPrimary))
+		c.print(t, MethodReadPrimary)
 	}(time.Now())
 	return readFn(c.client.Database(c.dbName,
 		options.Database().SetReadPreference(readpref.Primary())))
@@ -146,7 +146,7 @@ func (c *Connection) ReadPrimary(ctx context.Context, readFn func(*mongo.Databas
 func (c *Connection) ReadSecondary(ctx context.Context, readFn func(*mongo.Database) error) (err error) {
 	defer func(t time.Time) {
 		c.incRead(MethodReadPrimary, err)
-		log.Printf("MongoDB metric: %s", c.print(t, MethodReadPrimary))
+		c.print(t, MethodReadPrimary)
 	}(time.Now())
 	// Is read operation, so we need to connect to secondary node
 	if err := c.client.Ping(ctx, readpref.Secondary()); err != nil {
@@ -159,7 +159,7 @@ func (c *Connection) ReadSecondary(ctx context.Context, readFn func(*mongo.Datab
 func (c *Connection) Write(ctx context.Context, writeFn func(*mongo.Database) error) (err error) {
 	defer func(t time.Time) {
 		c.incWrite(MethodWrite, err)
-		log.Printf("MongoDB metric: %s", c.print(t, MethodWrite))
+		c.print(t, MethodWrite)
 	}(time.Now())
 	// normal write operation
 	return writeFn(c.client.Database(c.dbName))

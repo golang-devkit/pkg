@@ -34,7 +34,7 @@ func TestMetric_Print(t *testing.T) {
 	method := methodMetric("testMethod")
 
 	// Test empty method
-	result := m.print(time.Now(), methodMetric("nonexistentMethod"))
+	result := m.sprint(time.Now(), methodMetric("nonexistentMethod"))
 	if result != "" {
 		t.Errorf("Expected empty string for nonexistent method, got %s", result)
 	}
@@ -48,7 +48,7 @@ func TestMetric_Print(t *testing.T) {
 	m.summary[method].lastIssue = errors.New("test error")
 
 	expected := string(method) + " (" + time.Now().Format("2006-01-02") + ") - read: 5 (failed: 1), write: 10 (failed: 2), issue: test error"
-	result = m.print(time.Now(), method)
+	result = m.sprint(time.Now(), method)
 	if !strings.HasSuffix(result, expected) {
 		t.Errorf("Expected %s, got %s", expected, result)
 	}

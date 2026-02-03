@@ -3,6 +3,7 @@ package mongodb
 import (
 	"errors"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -54,16 +55,39 @@ func (m *metric) init(method ...methodMetric) {
 	}
 }
 
-func (m *metric) print(t time.Time, method methodMetric) string {
+func (m *metric) sprint(t time.Time, method methodMetric) string {
 	m.init()
 	op, ok := m.summary[method]
 	if !ok {
 		return ""
 	}
 
-	logger := log.NewFile()
-	defer logger.SyncFile(fmt.Sprintf("metric/mongodb_%s.log", m.date), log.SyncOption{UseFilenameOriginal: true})
-	fmt.Fprintf(logger, "%s\n", log.NewLoggerWith("mongodb-metric", "info", map[string]any{
+	// logger := log.NewFile()
+	// defer logger.SyncFile(fmt.Sprintf("metric/mongodb_%s.log", m.date), log.SyncOption{UseFilenameOriginal: true})
+	// fmt.Fprintf(logger, "%s\n", log.NewLoggerWith("mongodb-metric", "info", map[string]any{
+	// 	"type":         method,
+	// 	"date":         m.date,
+	// 	"read":         op.readCount,
+	// 	"read_failed":  op.readFailed,
+	// 	"write":        op.writeCount,
+	// 	"write_failed": op.writeFailed,
+	// 	"issue":        fmt.Sprintf("%v", op.lastIssue),
+	// }).JsonEncode())
+
+	return fmt.Sprintf("%s | %s (%s) - read: %d (failed: %d), write: %d (failed: %d), issue: %v",
+		time.Since(t).String(), method, m.date,
+		op.readCount, op.readFailed,
+		op.writeCount, op.writeFailed,
+		op.lastIssue)
+}
+
+func (m *metric) print(t time.Time, method methodMetric) {
+	m.init()
+	op, ok := m.summary[method]
+	if !ok {
+		return
+	}
+	mt := map[string]any{
 		"type":         method,
 		"date":         m.date,
 		"read":         op.readCount,
@@ -71,13 +95,9 @@ func (m *metric) print(t time.Time, method methodMetric) string {
 		"write":        op.writeCount,
 		"write_failed": op.writeFailed,
 		"issue":        fmt.Sprintf("%v", op.lastIssue),
-	}).JsonEncode())
-
-	return fmt.Sprintf("%s | %s (%s) - read: %d (failed: %d), write: %d (failed: %d), issue: %v",
-		time.Since(t).String(), method, m.date,
-		op.readCount, op.readFailed,
-		op.writeCount, op.writeFailed,
-		op.lastIssue)
+		"duration":     time.Since(t).String(),
+	}
+	fmt.Fprintf(os.Stdout, "%s\n", log.NewLoggerWith("mongodb-metric", "info", mt).JsonEncode())
 }
 
 func (m *metric) incRead(method methodMetric, issue error) {
