@@ -48,26 +48,9 @@ func apiLoggerHandler(h http.Handler) http.Handler {
 
 	// Define the API logger
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			origin    = valueDefault(r.Header.Get(headerOrigin), "N/A")
-			userAgent = valueDefault(r.Header.Get(headerUserAgent), "[N/A]")
-			requestId = valueDefault(r.Header.Get(xApiRequestId), "N/A")
-			clientId  = valueDefault(r.Header.Get(xApiClientId), "N/A")
-		)
 
 		// Get the logger from the context
-		reqLogger := getLoggerFromContext(r.Context()).With(
-			zap.String(logger.KeyNetRemoteAddr, r.RemoteAddr),
-			zap.String(logger.KeyNetHttpMethod, r.Method),
-			zap.String(logger.KeyNetHttpPath, r.URL.String()),
-			zap.String(logger.KeyNetClientID, clientId),
-			zap.String(logger.KeyNetRequestID, requestId),
-			zap.String(logger.KeyNetOrigin, origin),
-			zap.String(logger.KeyNetUserAgent, userAgent),
-		)
-
-		// replace request with the logger back to the context
-		r = r.WithContext(setLoggerToContext(r.Context(), reqLogger))
+		reqLogger := getLoggerFromContext(r.Context())
 
 		// make a new response writer with the original writer
 		wc := NewHttpWriter(w)
@@ -110,7 +93,7 @@ func printLogApi(wc *ResponseWriter, r *http.Request, t time.Time) {
 	//	more = fmt.Sprintf("%s > %s", more, msg)
 	//}
 
-	getLoggerFromContext(r.Context()).Info("API request completed",
+	logger.NewEntry().Info("API request completed",
 		zap.Time(logger.KeyTimestamp, time.Now()),
 		zap.String(logger.KeyNetHostname, hostname),
 		zap.String(logger.KeyNetRemoteAddr, r.RemoteAddr),

@@ -53,12 +53,22 @@ func corsHandler(h http.Handler) http.Handler {
 
 func loggerIntercepter(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Create logger with request context
-		reqLogger := getLogEntry().With(
+		var (
+			origin    = valueDefault(r.Header.Get(headerOrigin), "N/A")
+			userAgent = valueDefault(r.Header.Get(headerUserAgent), "[N/A]")
+			requestId = valueDefault(r.Header.Get(xApiRequestId), "N/A")
+			clientId  = valueDefault(r.Header.Get(xApiClientId), "N/A")
+		)
+		// Get the logger from the context
+		reqLogger := getLoggerFromContext(r.Context()).With(
+			zap.String(logger.KeyNetRemoteAddr, r.RemoteAddr),
 			zap.String(logger.KeyNetHttpMethod, r.Method),
-			zap.String(logger.KeyNetHttpPath, r.URL.Path),
+			zap.String(logger.KeyNetHttpPath, r.URL.String()),
 			zap.String(logger.KeyNetHttpQuery, r.URL.RawQuery),
-			zap.String(logger.KeyNetRequestID, r.Header.Get(xApiRequestId)),
+			zap.String(logger.KeyNetClientID, clientId),
+			zap.String(logger.KeyNetRequestID, requestId),
+			zap.String(logger.KeyNetOrigin, origin),
+			zap.String(logger.KeyNetUserAgent, userAgent),
 			zap.Object(logger.KeyNetRequestHeaders,
 				zapcore.ObjectMarshalerFunc(func(enc zapcore.ObjectEncoder) error {
 					for k, v := range r.Header {
