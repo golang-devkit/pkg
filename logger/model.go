@@ -9,6 +9,8 @@ const (
 	KeyEnvironment   = "environment"
 	KeyTimestamp     = "timestamp"
 
+	KeyJwtString = "jwt"
+
 	// Network related log field keys
 	KeyNetRemoteAddr       = "remote_addr"
 	KeyNetHttpMethod       = "http_method"
