@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	maxLoggedBodySize = 256  // Maximum size of the logged body in bytes
-	maxLoggedJsonSize = 1024 // Maximum size of the logged JSON in bytes
+	maxLoggedBodySize = 16 * 1024 // Maximum size of the logged body in bytes
+	maxLoggedJsonSize = 16 * 1024 // Maximum size of the logged JSON in bytes
 )
 
 type ResponseWriter struct {
@@ -27,7 +27,7 @@ func (rw *ResponseWriter) Header() http.Header {
 }
 
 func (rw *ResponseWriter) Write(b []byte) (int, error) {
-	// Limit the size of the logged body to 256 bytes
+	// Limit the size of the logged body to maxLoggedBodySize
 	if len(b) > maxLoggedBodySize {
 		io.Copy(rw.buffer, bytes.NewReader(b[:maxLoggedBodySize]))
 	} else {
@@ -64,7 +64,7 @@ func (rw *ResponseWriter) Status() string {
 }
 
 // Body returns the response a byte slice copy of the response body.
-// Maximum size is 256 bytes plus ellipsis if truncated. This is useful for logging purposes.
+// Maximum size is maxLoggedBodySize bytes plus ellipsis if truncated. This is useful for logging purposes.
 func (rw *ResponseWriter) Body() []byte {
 	// Check the Content-Type for special handling
 	ctype := rw.Header().Get("Content-Type")
