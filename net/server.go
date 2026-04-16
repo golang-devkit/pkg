@@ -1,12 +1,16 @@
 package net
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/golang-devkit/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func GetWd() string {
@@ -34,8 +38,10 @@ func HttpServerWithConfig(addr string, handler http.Handler) *http.Server {
 	}
 	//
 	defer func() {
-		log.Printf("Working directory: %s%s\n", GetWd(), string(filepath.Separator))
-		log.Printf("Serving on %s\n", def.Addr)
+		logger.NewEntry().Debug("Starting HTTP server",
+			zap.String("working_directory", fmt.Sprintf("%s%s", GetWd(), string(filepath.Separator))),
+			zap.String("address", def.Addr),
+		)
 	}()
 	//
 	if addr != "" && addr != def.Addr {

@@ -86,8 +86,9 @@ func loggerIntercepter(h http.Handler) http.Handler {
 }
 
 func customizeMethodNotAllowedHandler() http.Handler {
+	entry := logger.NewEntry()
 	//
-	fmt.Printf("[DEBUG] Customize MethodNotAllowedHandler default to allow method OPTIONS\n")
+	entry.Debug("Customize MethodNotAllowedHandler default to allow method OPTIONS for CORS preflight requests")
 	// Return 403 for Method Not Allowed
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//  for OPTIONS, we have handled it in CORS middleware
@@ -98,7 +99,10 @@ func customizeMethodNotAllowedHandler() http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		fmt.Printf("[DEBUG] 403 Not Found: %s %s\n", r.Method, r.URL.Path)
+		entry.Debug("403 Not Found",
+			zap.String("http_method", r.Method),
+			zap.String("path", r.URL.Path),
+		)
 		http.Error(w, "403 method not allowed", http.StatusMethodNotAllowed)
 	})
 }
@@ -129,9 +133,9 @@ func Middleware(ro *mux.Router, enableCORS bool, middlewareFunc ...http.HandlerF
 
 	// Set CORS global flag
 	if setCORSEnabled(enableCORS); enableCORS {
-		fmt.Printf("[DEBUG] CORS is enabled\n")
+		getLogEntry().Debug("CORS is enabled for all routes")
 	} else {
-		fmt.Printf("[DEBUG] CORS is disabled\n")
+		getLogEntry().Debug("CORS is disabled")
 	}
 
 	// Replace the default MethodNotAllowedHandler
