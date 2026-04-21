@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	httpinternal "github.com/golang-devkit/pkg/telegram/internal"
+	"github.com/golang-devkit/pkg/telegram/internal/utils"
 )
 
 // Client is a thread-safe Telegram Bot API client.
@@ -63,7 +63,7 @@ type apiRequest struct {
 	method     string
 	jsonBody   any
 	formFields map[string]string
-	formFiles  []httpinternal.MultipartFile
+	formFiles  []utils.MultipartFile
 }
 
 // New creates a Telegram Bot API client.
@@ -381,7 +381,7 @@ func (c *Client) buildMediaRequest(apiMethod, fileField string, chatID any, cont
 		return apiRequest{
 			method:     apiMethod,
 			formFields: formFields,
-			formFiles: []httpinternal.MultipartFile{
+			formFiles: []utils.MultipartFile{
 				c.toMultipartFile(fileField, content.File),
 			},
 		}, nil
@@ -405,7 +405,7 @@ func (c *Client) buildMediaGroupRequest(chatID any, content Content) (apiRequest
 	}
 
 	mediaPayload := make([]map[string]any, 0, len(content.Media))
-	files := make([]httpinternal.MultipartFile, 0)
+	files := make([]utils.MultipartFile, 0)
 	hasUpload := false
 
 	for index, item := range content.Media {
@@ -519,17 +519,17 @@ func doOnce[T any](ctx context.Context, c *Client, req apiRequest) (T, error) {
 func (c *Client) newHTTPRequest(ctx context.Context, req apiRequest) (*http.Request, error) {
 	endpoint := c.endpoint(req.method)
 	if len(req.formFiles) > 0 {
-		return httpinternal.NewMultipartRequest(ctx, endpoint, req.formFields, req.formFiles)
+		return utils.NewMultipartRequest(ctx, endpoint, req.formFields, req.formFiles)
 	}
-	return httpinternal.NewJSONRequest(ctx, endpoint, req.jsonBody)
+	return utils.NewJSONRequest(ctx, endpoint, req.jsonBody)
 }
 
 func (c *Client) endpoint(method string) string {
 	return fmt.Sprintf("%s/bot%s/%s", c.baseURL, c.token, method)
 }
 
-func (c *Client) toMultipartFile(fieldName string, file *InputFile) httpinternal.MultipartFile {
-	return httpinternal.MultipartFile{
+func (c *Client) toMultipartFile(fieldName string, file *InputFile) utils.MultipartFile {
+	return utils.MultipartFile{
 		FieldName:   fieldName,
 		FileName:    file.fileName(),
 		ContentType: file.ContentType,

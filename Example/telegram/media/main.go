@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"telegram"
+	"github.com/golang-devkit/pkg/telegram"
 )
 
 func main() {
