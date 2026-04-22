@@ -118,10 +118,10 @@ sequenceDiagram
 
 ### 5.3 Mapping với code hiện tại
 
-- Constructor: [client.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/client.go:71)
-- Public send methods: [client.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/client.go:114)
-- Request builder: [client.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/client.go:293)
-- JSON request: [internal/http.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/internal/http.go:24)
+- Constructor: [client.go](../client.go#L71)
+- Public send methods: [client.go](../client.go#L114)
+- Request builder: [client.go](../client.go#L293)
+- JSON request: [internal/utils/http.go](../internal/utils/http.go#L24)
 
 ## 6. Flow outbound: gửi media và upload file
 
@@ -134,7 +134,7 @@ sequenceDiagram
 - `Path`: upload file cục bộ từ disk
 - `Data`: upload file từ buffer trong RAM
 
-Định nghĩa nằm ở [content.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/content.go:83).
+Định nghĩa nằm ở [content.go](../content.go#L83).
 
 ### 6.2 Quy tắc xử lý
 
@@ -482,7 +482,7 @@ Metrics nên có:
 
 ## 19. Tài liệu liên quan
 
-- Framework architecture: [ARCHITECTURE.md](/Users/mac/GolandProjects/smsTelegramPrj/telegram/docs/ARCHITECTURE.md)
-- Source code client: [client.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/client.go)
-- Source code content model: [content.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/content.go)
+- Framework architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Source code client: [client.go](../client.go)
+- Source code content model: [content.go](../content.go)
 - Telegram Bot API: <https://core.telegram.org/bots/api>

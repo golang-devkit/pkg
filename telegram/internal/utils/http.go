@@ -104,13 +104,13 @@ func NewMultipartRequest(ctx context.Context, endpoint string, fields map[string
 
 func createPart(mpw *multipart.Writer, file MultipartFile) (io.Writer, error) {
 	if file.ContentType == "" {
-		return mpw.CreateFormFile(file.FieldName, file.FileName)
+		return mpw.CreateFormFile(sanitizeHeaderValue(file.FieldName), sanitizeHeaderValue(file.FileName))
 	}
 
 	header := make(textproto.MIMEHeader)
 	header.Set(
 		"Content-Disposition",
-		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, escapeQuotes(file.FieldName), escapeQuotes(file.FileName)),
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, escapeQuotes(sanitizeHeaderValue(file.FieldName)), escapeQuotes(sanitizeHeaderValue(file.FileName))),
 	)
 	header.Set("Content-Type", file.ContentType)
 	return mpw.CreatePart(header)
@@ -118,4 +118,13 @@ func createPart(mpw *multipart.Writer, file MultipartFile) (io.Writer, error) {
 
 func escapeQuotes(value string) string {
 	return strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(value)
+}
+
+func sanitizeHeaderValue(value string) string {
+	return strings.Map(func(r rune) rune {
+		if r == '\r' || r == '\n' {
+			return -1
+		}
+		return r
+	}, value)
 }

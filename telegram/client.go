@@ -29,6 +29,7 @@ type Client struct {
 	retry                      RetryConfig
 	rateLimiter                *rateLimiter
 	batchConcurrency           int
+	randSource                 *rand.Rand
 }
 
 type rateLimiter struct {
@@ -106,6 +107,7 @@ func New(token string, opts ...Option) (*Client, error) {
 			minInterval: cfg.RateLimit.MinInterval,
 		},
 		batchConcurrency: cfg.BatchConcurrency,
+		randSource:       rand.New(rand.NewSource(time.Now().UnixNano())),
 	}, nil
 }
 
@@ -579,7 +581,7 @@ func (c *Client) retryDelay(err error, retry RetryConfig, attempt int) time.Dura
 	}
 
 	if retry.Jitter > 0 {
-		delay += time.Duration(rand.Int63n(int64(retry.Jitter) + 1))
+		delay += time.Duration(c.randSource.Int63n(int64(retry.Jitter) + 1))
 	}
 
 	if delay > retry.MaxDelay {

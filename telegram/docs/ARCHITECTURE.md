@@ -28,14 +28,14 @@ Repository hiện đã có một package outbound hoàn chỉnh:
 
 Các file chính:
 
-- [client.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/client.go)
-- [config.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/config.go)
-- [options.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/options.go)
-- [content.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/content.go)
-- [keyboard.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/keyboard.go)
-- [types.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/types.go)
-- [error.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/error.go)
-- [internal/http.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/internal/http.go)
+- [client.go](../client.go)
+- [config.go](../config.go)
+- [options.go](../options.go)
+- [content.go](../content.go)
+- [keyboard.go](../keyboard.go)
+- [types.go](../types.go)
+- [error.go](../error.go)
+- [internal/utils/http.go](../internal/utils/http.go)
 
 ### 2.2 Chưa có nhưng nên thuộc full framework
 
@@ -424,7 +424,7 @@ flowchart LR
 
 ## 14. Error model và failure policy
 
-Error type hiện có nằm ở [error.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/error.go).
+Error type hiện có nằm ở [error.go](../error.go).
 
 ### 14.1 Failure classes
 
@@ -652,6 +652,6 @@ Vì vậy, hướng tốt nhất là:
 
 ## 22. Tài liệu liên quan
 
-- Runtime flow: [FLOW.md](/Users/mac/GolandProjects/smsTelegramPrj/telegram/docs/FLOW.md)
-- Current client implementation: [client.go](/Users/mac/GolandProjects/smsTelegramPrj/telegram/client.go)
+- Runtime flow: [FLOW.md](FLOW.md)
+- Current client implementation: [client.go](../client.go)
 - Telegram Bot API: <https://core.telegram.org/bots/api>
