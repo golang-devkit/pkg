@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -10,12 +9,10 @@ import (
 )
 
 func main() {
-	// The token you received from BotFather goes here
-	token := "8422412383:AAF1sw5SgvKNnmXlGXcUpX50uOq9crXhMus"
-
-	// You can override it via environment variables
-	if envToken := os.Getenv("TELEGRAM_BOT_TOKEN"); envToken != "" {
-		token = envToken
+	// Load the bot token from the environment instead of hard-coding it.
+	token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if token == "" {
+		log.Fatal("TELEGRAM_BOT_TOKEN is required")
 	}
 
 	// 1. Initialize the Telegram client
@@ -36,11 +33,6 @@ func main() {
 	// or use a public channel handle like "@my_channel_name" with SendMessage()
 	// Make sure the bot is added to your chat or channel first!
 	var chatID int64 = 5890042997
-
-	if chatID == 0 {
-		fmt.Println("Please set a valid chatID in main.go to send the test message.")
-		return
-	}
 
 	log.Printf("Sending message to chat ID: %d", chatID)
 
