@@ -43,7 +43,7 @@ func WriteJSONbyError(w http.ResponseWriter, httpStatus int, err error, v interf
 
 	// add more error message to the header
 	if err != nil {
-		w.Header().Set(textproto.CanonicalMIMEHeaderKey("x-more-error"), fmt.Sprintf("%+v", err))
+		w.Header().Set(textproto.CanonicalMIMEHeaderKey(xDescriptionError), fmt.Sprintf("%+v", err))
 	}
 	// write the response
 	w.WriteHeader(httpStatus)
