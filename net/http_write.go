@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/textproto"
+	"reflect"
 )
 
 // WriteJSON writes the JSON representation of v to the http.ResponseWriter.
@@ -25,13 +26,18 @@ func WriteJSON(w http.ResponseWriter, httpStatus int, v interface{}) error {
 
 // WriteJSONbyError writes the JSON representation of v to the http.ResponseWriter.
 // Payload body is JSON encoded of (v) if err is nil, otherwise it returns the JSON encoded of error message and (v) is ignored.
+//
+// (*) Note: If v is nil or invalid, the http status code will be set to 502 Bad Gateway (RFC 9110, 15.6.3) regardless of the provided httpStatus.
 func WriteJSONbyError(w http.ResponseWriter, httpStatus int, err error, v interface{}) error {
 
 	// validate http status code
 	if http.StatusText(httpStatus) == "" {
 		return fmt.Errorf("invalid http status code: %d", httpStatus)
 	}
-
+	// If v is nil or invalid, set the http status code to 502 Bad Gateway (RFC 9110, 15.6.3)
+	if reflect.TypeOf(v) == nil || reflect.ValueOf(v).IsValid() {
+		httpStatus = http.StatusBadGateway
+	}
 	// Set the Content-Type to application/json
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
