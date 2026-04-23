@@ -22,7 +22,6 @@ const defaultGatewayBaseURL = "https://gatewayapi.telegram.org"
 var gatewayPhonePattern = regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
 
 // GatewayConfig holds the final Telegram Gateway client configuration.
-// GatewayConfig giữ cấu hình cuối cùng của Telegram Gateway client.
 type GatewayConfig struct {
 	Token      string
 	BaseURL    string
@@ -35,11 +34,9 @@ type GatewayConfig struct {
 }
 
 // GatewayOption mutates GatewayConfig during client construction.
-// GatewayOption thay đổi GatewayConfig trong lúc khởi tạo client.
 type GatewayOption func(*GatewayConfig) error
 
 // GatewayClient is a thread-safe Telegram Gateway API client.
-// GatewayClient là Telegram Gateway API client an toàn cho concurrent use.
 type GatewayClient struct {
 	token       string
 	baseURL     string
@@ -51,7 +48,6 @@ type GatewayClient struct {
 }
 
 // GatewaySendVerificationMessageRequest is the payload for sendVerificationMessage.
-// GatewaySendVerificationMessageRequest là payload cho sendVerificationMessage.
 type GatewaySendVerificationMessageRequest struct {
 	PhoneNumber    string `json:"phone_number"`
 	RequestID      string `json:"request_id,omitempty"`
@@ -64,7 +60,6 @@ type GatewaySendVerificationMessageRequest struct {
 }
 
 // GatewayRequestStatus is the Telegram Gateway request status object.
-// GatewayRequestStatus là object trạng thái request của Telegram Gateway.
 type GatewayRequestStatus struct {
 	RequestID          string                     `json:"request_id"`
 	PhoneNumber        string                     `json:"phone_number"`
@@ -77,14 +72,12 @@ type GatewayRequestStatus struct {
 }
 
 // GatewayDeliveryStatus is the delivery status returned by Telegram Gateway.
-// GatewayDeliveryStatus là trạng thái giao message của Telegram Gateway.
 type GatewayDeliveryStatus struct {
 	Status    string `json:"status"`
 	UpdatedAt int64  `json:"updated_at"`
 }
 
 // GatewayVerificationStatus is the verification status returned by Telegram Gateway.
-// GatewayVerificationStatus là trạng thái xác thực của Telegram Gateway.
 type GatewayVerificationStatus struct {
 	Status      string `json:"status"`
 	UpdatedAt   int64  `json:"updated_at"`
@@ -92,7 +85,6 @@ type GatewayVerificationStatus struct {
 }
 
 // GatewayError wraps Telegram Gateway API and transport-level errors.
-// GatewayError wrap lỗi Telegram Gateway API và transport-level.
 type GatewayError struct {
 	Method     string
 	HTTPStatus int
@@ -171,7 +163,6 @@ func NewGateway(token string, opts ...GatewayOption) (*GatewayClient, error) {
 }
 
 // WithGatewayTimeout sets the HTTP client timeout.
-// WithGatewayTimeout đặt timeout cho HTTP client.
 func WithGatewayTimeout(timeout time.Duration) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		if timeout <= 0 {
@@ -183,7 +174,6 @@ func WithGatewayTimeout(timeout time.Duration) GatewayOption {
 }
 
 // WithGatewayHTTPClient injects a custom HTTP client.
-// WithGatewayHTTPClient inject custom HTTP client.
 func WithGatewayHTTPClient(client *http.Client) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		if client == nil {
@@ -195,7 +185,6 @@ func WithGatewayHTTPClient(client *http.Client) GatewayOption {
 }
 
 // WithGatewayLogger injects a logger used for retry and transport diagnostics.
-// WithGatewayLogger inject logger dùng cho retry và chẩn đoán transport.
 func WithGatewayLogger(logger Logger) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		cfg.Logger = logger
@@ -204,7 +193,6 @@ func WithGatewayLogger(logger Logger) GatewayOption {
 }
 
 // WithGatewayProxy configures an outbound HTTP proxy.
-// WithGatewayProxy cấu hình HTTP proxy outbound.
 func WithGatewayProxy(rawURL string) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		if strings.TrimSpace(rawURL) == "" {
@@ -220,7 +208,6 @@ func WithGatewayProxy(rawURL string) GatewayOption {
 }
 
 // WithGatewayRetry configures automatic retry with exponential backoff.
-// WithGatewayRetry cấu hình retry tự động với exponential backoff.
 func WithGatewayRetry(retry RetryConfig) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		cfg.Retry = retry.normalized()
@@ -229,7 +216,6 @@ func WithGatewayRetry(retry RetryConfig) GatewayOption {
 }
 
 // WithGatewayRateLimit configures client-side pacing between requests.
-// WithGatewayRateLimit cấu hình pacing phía client giữa các request.
 func WithGatewayRateLimit(rateLimit RateLimitConfig) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		cfg.RateLimit = rateLimit.normalized()
@@ -238,7 +224,6 @@ func WithGatewayRateLimit(rateLimit RateLimitConfig) GatewayOption {
 }
 
 // WithGatewayBaseURL overrides the Telegram Gateway API base URL.
-// WithGatewayBaseURL override base URL của Telegram Gateway API.
 func WithGatewayBaseURL(rawURL string) GatewayOption {
 	return func(cfg *GatewayConfig) error {
 		if strings.TrimSpace(rawURL) == "" {
@@ -250,7 +235,6 @@ func WithGatewayBaseURL(rawURL string) GatewayOption {
 }
 
 // SendVerificationMessage sends an OTP or verification code through Telegram Gateway.
-// SendVerificationMessage gửi OTP hoặc mã xác thực qua Telegram Gateway.
 func (c *GatewayClient) SendVerificationMessage(ctx context.Context, req GatewaySendVerificationMessageRequest) (*GatewayRequestStatus, error) {
 	req = req.normalized()
 	if err := req.validate(); err != nil {
@@ -268,7 +252,6 @@ func (c *GatewayClient) SendVerificationMessage(ctx context.Context, req Gateway
 }
 
 // CheckSendAbility checks whether Telegram Gateway can deliver a verification message.
-// CheckSendAbility kiểm tra Telegram Gateway có thể giao verification message hay không.
 func (c *GatewayClient) CheckSendAbility(ctx context.Context, phoneNumber string) (*GatewayRequestStatus, error) {
 	phoneNumber = strings.TrimSpace(phoneNumber)
 	if err := validateGatewayPhoneNumber(phoneNumber); err != nil {
@@ -285,7 +268,6 @@ func (c *GatewayClient) CheckSendAbility(ctx context.Context, phoneNumber string
 }
 
 // CheckVerificationStatus checks request status and optionally validates a code entered by the user.
-// CheckVerificationStatus kiểm tra trạng thái request và có thể validate code người dùng nhập.
 func (c *GatewayClient) CheckVerificationStatus(ctx context.Context, requestID, code string) (*GatewayRequestStatus, error) {
 	requestID = strings.TrimSpace(requestID)
 	if requestID == "" {
@@ -310,7 +292,6 @@ func (c *GatewayClient) CheckVerificationStatus(ctx context.Context, requestID, 
 }
 
 // RevokeVerificationMessage revokes a previously sent verification message.
-// RevokeVerificationMessage thu hồi verification message đã gửi trước đó.
 func (c *GatewayClient) RevokeVerificationMessage(ctx context.Context, requestID string) (bool, error) {
 	requestID = strings.TrimSpace(requestID)
 	if requestID == "" {
@@ -327,7 +308,6 @@ func (c *GatewayClient) RevokeVerificationMessage(ctx context.Context, requestID
 }
 
 // Error returns a compact formatted error message.
-// Error trả về thông điệp lỗi ngắn gọn.
 func (e *GatewayError) Error() string {
 	if e == nil {
 		return ""
@@ -347,7 +327,6 @@ func (e *GatewayError) Error() string {
 }
 
 // Unwrap exposes the underlying transport or parsing error.
-// Unwrap expose lỗi transport hoặc parsing gốc.
 func (e *GatewayError) Unwrap() error {
 	if e == nil {
 		return nil
@@ -356,7 +335,6 @@ func (e *GatewayError) Unwrap() error {
 }
 
 // IsRetryable reports whether the error is safe to retry automatically.
-// IsRetryable cho biết lỗi có thể retry tự động hay không.
 func (e *GatewayError) IsRetryable() bool {
 	if e == nil {
 		return false
