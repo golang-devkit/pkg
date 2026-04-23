@@ -1,16 +1,10 @@
 package telegram
 
-import (
-	"net/http"
-	"net/url"
-	"time"
-)
+import "time"
 
 const (
-	defaultBaseURL         = "https://api.telegram.org"
 	defaultTimeout         = 10 * time.Second
 	defaultMinRequestDelay = 35 * time.Millisecond
-	defaultBatchWorkers    = 4
 )
 
 // Logger is the minimal logger contract used by the client.
@@ -66,29 +60,6 @@ func (r RateLimitConfig) normalized() RateLimitConfig {
 	return r
 }
 
-// Config holds the final client configuration after options are applied.
-// Config giữ cấu hình cuối cùng của client sau khi apply options.
-type Config struct {
-	Token                      string
-	BaseURL                    string
-	DefaultParseMode           ParseMode
-	DefaultDisableNotification bool
-	Timeout                    time.Duration
-	HTTPClient                 *http.Client
-	Logger                     Logger
-	ProxyURL                   *url.URL
-	Retry                      RetryConfig
-	RateLimit                  RateLimitConfig
-	BatchConcurrency           int
-}
-
-func defaultConfig(token string) Config {
-	return Config{
-		Token:            token,
-		BaseURL:          defaultBaseURL,
-		Timeout:          defaultTimeout,
-		Retry:            (RetryConfig{}).normalized(),
-		RateLimit:        (RateLimitConfig{Enabled: true}).normalized(),
-		BatchConcurrency: defaultBatchWorkers,
-	}
-}
+// Config holds the final Telegram Gateway client configuration.
+// Config giữ cấu hình cuối cùng của Telegram Gateway client.
+type Config = GatewayConfig
