@@ -22,7 +22,7 @@ init: clean-mod
 		rm -rf go.mod go.sum vendor/
 	@echo "==> Initializing Go module..."; \
 		go mod init github.com/golang-devkit/pkg; \
-		go mod edit -go=1.25.7; \
+		go mod edit -go=1.26.4; \
 		go mod edit -toolchain=$(GO_TOOLCHAIN);
 	# Add any replace directives here:
 	# @go mod edit -replace=old/path=new/path
@@ -45,6 +45,10 @@ upgrade-module-all:
 	@echo "✅ Upgrade completed!"
 
 fetch-module: fetch-mod upgrade-module
+# 	@echo "==> Specify the specific packages..."; \
+# 		go mod edit -require=github.com/firebase/genkit/go@v1.8.0; \
+# 		go mod edit -require=github.com/invopop/jsonschema@v0.13.0; \
+# 		go mod tidy
 	@echo "==> Create vendor directory..."; \
 		go mod vendor && echo "✅ Fetch Go module completed!"
 	@echo "==> Run govulncheck..."; \

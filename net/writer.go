@@ -82,6 +82,10 @@ func (rw *ResponseWriter) Body() []byte {
 	if strings.HasPrefix(ctype, "text/csv") {
 		return fmt.Appendf(nil, "<<%s data>>", ctype)
 	}
+	if strings.HasPrefix(ctype, "text/html") || strings.HasPrefix(ctype, "text/css") ||
+		strings.HasPrefix(ctype, "text/javascript") {
+		return fmt.Appendf(nil, "<<%s data>>", ctype)
+	}
 	if strings.HasPrefix(ctype, "application/octet-stream") || strings.HasPrefix(ctype, "application/pdf") ||
 		strings.HasPrefix(ctype, "application/zip") {
 		return fmt.Appendf(nil, "<<%s data>>", ctype)
