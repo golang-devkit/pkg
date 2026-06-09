@@ -12,6 +12,9 @@
 *.so
 *.dylib
 
+# Binary programs directory output by go build
+bin/
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -23,5 +26,16 @@ vendor/
 
 # Go workspace file
 go.work
+
+# Os generated files
+.DS_Store
+
+# Windows thumbnail cache files
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.iml
 
 # End of https://www.toptal.com/developers/gitignore/api/go

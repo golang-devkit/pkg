@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 
 	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +20,7 @@ func MixHttp2(rest, gRPC http.Handler) http.Handler {
 		}
 	})
 
-	return h2c.NewHandler(mainHandler, &http2.Server{})
+	return NewH2cHandler(mainHandler, &http2.Server{})
 }
 
 // Walk for gRPC only
